@@ -64,3 +64,4 @@
 - name: Apply netplan configuration
   ansible.builtin.command: netplan apply
   tags: install_net
+  # noqa: no-changed-when

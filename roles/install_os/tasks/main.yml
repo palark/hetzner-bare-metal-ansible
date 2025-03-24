@@ -19,6 +19,7 @@
   poll: 0
   register: install_task
   tags: install_os
+  # noqa: no-changed-when
 
 - name: Wait for installation to complete
   ansible.builtin.async_status:
