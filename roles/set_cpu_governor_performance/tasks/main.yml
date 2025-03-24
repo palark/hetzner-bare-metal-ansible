@@ -1,0 +1,18 @@
+- name: Copy script
+  ansible.builtin.copy:
+    src: set-cpufreq.sh
+    dest: "/usr/local/bin/set-cpufreq.sh"
+    mode: '0755'
+
+- name: Create systemd unit to set CPU governor to performance
+  ansible.builtin.copy:
+    src: set-cpufreq.service
+    dest: "/etc/systemd/system/set-cpufreq.service"
+    mode: '0644'
+
+- name: Enable and start systemd unit
+  ansible.builtin.systemd:
+    name: "set-cpufreq"
+    enabled: true
+    state: started
+    daemon_reload: true

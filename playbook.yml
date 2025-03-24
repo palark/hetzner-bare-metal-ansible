@@ -1,0 +1,76 @@
+- name: Setup Hetzner bare-metal servers
+  hosts: hetzner_init
+  become: false
+  gather_facts: false
+  connection: local
+  tasks:
+    - name: Check and prepare the ssh key
+      ansible.builtin.include_role:
+        name: prepare_ssh_key
+      tags: hetzner_bootstrap
+
+    - name: Activate Rescue Mode via Hetzner API
+      ansible.builtin.include_role:
+        name: hetzner_bootstrap
+      tags: hetzner_bootstrap
+
+    - name: Wait for server to reboot into Rescue Mode
+      ansible.builtin.pause:
+        minutes: 5
+      tags: hetzner_bootstrap
+
+- name: Install OS
+  hosts: nodes
+  become: true
+  gather_facts: false
+  vars:
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+  tasks:
+    - name: Start OS installation
+      ansible.builtin.include_role:
+        name: install_os
+      tags: install_os
+
+- name: Setup Kubernetes node
+  hosts: nodes
+  become: true
+  gather_facts: false
+  vars:
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+  tasks:
+    - name: Configure network (public and private interfaces)
+      ansible.builtin.include_role:
+        name: setup_network
+      when: setup_network | bool
+      tags:
+        - features
+        - install_net
+
+    - name: Create local users with ssh public key
+      ansible.builtin.include_role:
+        name: create_users
+      when: create_users | bool
+      tags:
+        - features
+        - create_users
+
+    - name: Set CPU governor to performance mode
+      ansible.builtin.include_role:
+        name: set_cpu_governor_performance
+      when: set_cpu_governor_performance | bool
+      tags:
+        - features
+        - set_cpu_governor_performance
+
+    - name: Install packages
+      ansible.builtin.include_role:
+        name: install_packages
+      when: install_packages | bool
+      tags:
+        - features
+        - install_packages
+
+    # - name: Join Kubernetes cluster
+    #   ansible.builtin.include_role:
+    #     name: join_cluster
+    #   when: join_cluster | bool

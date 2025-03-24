@@ -1,0 +1,48 @@
+- name: Ensure SSH key is available
+  ansible.builtin.stat:
+    path: "{{ ssh_public_key_path }}"
+  register: ssh_key_check
+  delegate_to: localhost
+  failed_when: not ssh_key_check.stat.exists
+  changed_when: false
+  tags: hetzner_bootstrap
+
+- name: Get fingerprint from public key
+  ansible.builtin.command: ssh-keygen -E md5 -lf {{ ssh_public_key_path }}
+  changed_when: false
+  register: ssh_fingerprint
+  tags: hetzner_bootstrap
+
+- name: Extract MD5 fingerprint
+  ansible.builtin.set_fact:
+    ssh_md5_fingerprint: "{{ (ssh_fingerprint.stdout | regex_search('MD5:([a-f0-9:]+)', '\\1'))[0] }}"
+  changed_when: false
+  tags: hetzner_bootstrap
+
+- name: Check the key in robot
+  ansible.builtin.uri:
+    url: https://robot-ws.your-server.de/key/{{ ssh_md5_fingerprint }}
+    method: GET
+    user: "{{ hetzner_user }}"
+    password: "{{ hetzner_password }}"
+    force_basic_auth: true
+    headers:
+      Content-Type: application/json
+    status_code: [200, 404]
+  register: check_robot_key
+  tags: hetzner_bootstrap
+
+- name: Create new key in robot to bootstrap the server
+  ansible.builtin.uri:
+    url: https://robot-ws.your-server.de/key
+    method: POST
+    user: "{{ hetzner_user }}"
+    password: "{{ hetzner_password }}"
+    force_basic_auth: true
+    body_format: form-urlencoded
+    body:
+      name: "ansible-key"
+      data: "{{ lookup('ansible.builtin.file', ssh_public_key_path) }}"
+    status_code: [201]
+  when: check_robot_key.status == 404
+  tags: hetzner_bootstrap

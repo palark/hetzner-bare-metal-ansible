@@ -1,0 +1,66 @@
+- name: Gather all network interface information
+  ansible.builtin.command: ip link show
+  register: interface_info
+  changed_when: false
+  tags: install_net
+
+- name: Get interfaces in UP state
+  ansible.builtin.shell: |
+    set -o pipefail
+    ip link show | grep -B1 'state UP' | grep -E '^[0-9]+:' | awk '{print $2}' | sed 's/://'
+  register: up_interfaces_output
+  changed_when: false
+  tags: install_net
+
+- name: Get interfaces in DOWN state
+  ansible.builtin.shell: |
+    set -o pipefail
+    ip link show | grep -B1 'state DOWN' | grep -E '^[0-9]+:' | awk '{print $2}' | sed 's/://'
+  register: down_interfaces_output
+  changed_when: false
+  tags: install_net
+
+- name: Set external and internal interfaces based on command output
+  ansible.builtin.set_fact:
+    external_interface: "{{ (up_interfaces_output.stdout_lines | first) | default('') }}"
+    internal_interface: "{{ (down_interfaces_output.stdout_lines | first) | default('') }}"
+  tags: install_net
+
+- name: Debug extracted interfaces
+  ansible.builtin.debug:
+    msg:
+      - "External Interface (UP): {{ external_interface }}"
+      - "Internal Interface (DOWN): {{ internal_interface }}"
+  tags: install_net
+
+- name: Configure network interfaces
+  ansible.builtin.template:
+    src: public_netplan_template.yaml.j2
+    dest: /etc/netplan/01-netcfg.yaml
+    owner: root
+    group: root
+    mode: '0600'
+  tags: install_net
+
+- name: Change name for internal interface
+  ansible.builtin.replace:
+    path: /etc/netplan/01-netcfg.yaml
+    regexp: '^\s*internal:'
+    replace: '    {{ internal_interface }}:'
+  tags: install_net
+
+- name: Change name for external interface
+  ansible.builtin.replace:
+    path: /etc/netplan/01-netcfg.yaml
+    regexp: '^\s*external:'
+    replace: '    {{ external_interface }}:'
+  tags: install_net
+
+- name: Validate netplan configuration
+  ansible.builtin.command: netplan generate
+  changed_when: false
+  tags: install_net
+
+- name: Apply netplan configuration
+  ansible.builtin.command: netplan apply
+  tags: install_net

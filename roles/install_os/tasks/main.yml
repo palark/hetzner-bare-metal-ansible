@@ -1,0 +1,35 @@
+- name: Check if installimage is available
+  ansible.builtin.command: /root/.oldroot/nfs/install/installimage -h
+  register: installimage_check
+  failed_when: installimage_check.rc != 0
+  changed_when: false
+  tags: install_os
+
+- name: Run installimage
+  ansible.builtin.command: |
+    /root/.oldroot/nfs/install/installimage -a \
+    -d nvme0n1,nvme1n1 \
+    -n {{ inventory_hostname }} \
+    -i /root/.oldroot/nfs/images/{{ os_image }} \
+    -p /boot/efi:esp:256M,/boot:ext3:1024M,/:ext4:all \
+    -r yes \
+    -l 1 \
+    -K "/root/.ssh/authorized_keys"
+  async: 1200
+  poll: 0
+  register: install_task
+  tags: install_os
+
+- name: Wait for installation to complete
+  ansible.builtin.async_status:
+    jid: "{{ install_task.ansible_job_id }}"
+  register: install_status
+  until: install_status.finished
+  retries: 10
+  delay: 60
+  tags: install_os
+
+- name: Reboot into installed OS
+  ansible.builtin.reboot:
+    reboot_timeout: 300
+  tags: install_os

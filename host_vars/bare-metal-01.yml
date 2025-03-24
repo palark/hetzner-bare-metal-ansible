@@ -1,0 +1,16 @@
+# Individual parameters
+interface_config:
+  ethernets:
+    internal:
+      addresses:
+        - 11.0.0.2/16
+    external:
+      addresses:
+        - 1.1.1.1/26
+      routes:
+        - to: 0.0.0.0/0
+          via: 1.1.1.1
+          on_link: true
+      nameservers:
+        - 185.12.64.1
+        - 185.12.64.2

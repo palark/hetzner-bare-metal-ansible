@@ -1,0 +1,28 @@
+# Feature flags
+setup_network: false
+# By default, cpu governor is set to "powersave" mode, which can cause unexpected side effects. Set this flag to "true" to switch to the "performance" mode
+set_cpu_governor_performance: true
+join_cluster: false
+
+install_packages: true
+packages_list:
+  - curl
+  - jq
+
+create_users: false
+users_list:
+  - user
+# Do not forget to add public keys for all users to the roles/create_users/files directory
+# Run 'openssl passwd -6' to generate password hash - below is example of hashed 'password'
+users_default_password: "$6$xLpcTGFHUdq19r8q$fVLd4/EsNo9v30rlZyQMkBdkuCpFc4yYwYilvNTlvU.IRSjY9E1wtRqnd1HS./fBvxhtmMBddXZEyNWCGYSjd1"
+
+# To get actual list of images boot once into the rescue mode and check content of /root/.oldroot/nfs/install/
+os_image: Ubuntu-2404-noble-amd64-base.tar.gz
+# os_image: Ubuntu-2204-jammy-amd64-base.tar.gz
+
+# Hetzner API credentials - You can create this user in Robot via the user menu in the upper right corner under "Settings" -> "Web service and app settings"
+hetzner_user: "Webservice_user"
+hetzner_password: "Webservice_password"
+
+# Path to the ssh public key used to connect to the server
+ssh_public_key_path: "~/.ssh/id_rsa.pub"

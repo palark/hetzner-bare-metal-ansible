@@ -1,0 +1,3 @@
+- name: Enforce new user to change password on first login
+  ansible.builtin.command: chage -d 0 "{{ item.item }}"
+  loop: "{{ user_changed.results }}"

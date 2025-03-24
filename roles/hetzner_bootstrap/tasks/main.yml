@@ -1,0 +1,72 @@
+- name: Check current boot mode
+  ansible.builtin.uri:
+    url: https://robot-ws.your-server.de/boot/{{ server_id }}
+    method: GET
+    user: "{{ hetzner_user }}"
+    password: "{{ hetzner_password }}"
+    force_basic_auth: true
+    headers:
+      Content-Type: application/json
+    status_code: 200
+  vars:
+    server_id: "{{ hostvars[inventory_hostname].server_id }}"
+  register: boot_mode_info
+  tags: hetzner_bootstrap
+
+- name: Debug API response
+  ansible.builtin.debug:
+    var: boot_mode_info
+  tags: hetzner_bootstrap
+
+- name: Fail if API response is invalid
+  ansible.builtin.fail:
+    msg: "Invalid API response. Ensure the API endpoint and credentials are correct."
+  when: boot_mode_info.json is not defined
+  tags: hetzner_bootstrap
+
+- name: Debug current boot mode
+  ansible.builtin.debug:
+    msg:
+      - "Rescue Mode active: {{ boot_mode_info.json.boot.rescue.active }}"
+      - "Linux Mode active: {{ boot_mode_info.json.boot.linux.active }}"
+  when: boot_mode_info is defined and boot_mode_info.json is defined
+  tags: hetzner_bootstrap
+
+- name: Skip activation if Rescue Mode is already enabled
+  ansible.builtin.debug:
+    msg: "Rescue Mode is already active on server {{ server_id }}"
+  when: boot_mode_info.json.boot.rescue.active | bool
+  tags: hetzner_bootstrap
+
+- name: Activate Rescue Mode
+  ansible.builtin.uri:
+    url: https://robot-ws.your-server.de/boot/{{ server_id }}/rescue
+    method: POST
+    user: "{{ hetzner_user }}"
+    password: "{{ hetzner_password }}"
+    force_basic_auth: true
+    headers:
+      Content-Type: application/x-www-form-urlencoded
+    body: 'os=linux&arch=64&authorized_key[]={{ ssh_md5_fingerprint }}'
+    status_code: 200
+  vars:
+    server_id: "{{ hostvars[inventory_hostname].server_id }}"
+  register: rescue_mode_response
+  when: not boot_mode_info.json.boot.rescue.active
+  tags: hetzner_bootstrap
+
+- name: Reboot Server into Rescue Mode
+  ansible.builtin.uri:
+    url: https://robot-ws.your-server.de/reset/{{ server_id }}
+    method: POST
+    user: "{{ hetzner_user }}"
+    password: "{{ hetzner_password }}"
+    force_basic_auth: true
+    headers:
+      Content-Type: application/x-www-form-urlencoded
+    body: "type=hw"
+    status_code: 200
+  vars:
+    server_id: "{{ hostvars[inventory_hostname].server_id }}"
+  when: not boot_mode_info.json.boot.rescue.active
+  tags: hetzner_bootstrap

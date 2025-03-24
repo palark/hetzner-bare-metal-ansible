@@ -1,0 +1,3 @@
+- name: Skip fetching bootstrap script (Feature Flag Disabled)
+  ansible.builtin.debug:
+    msg: "Cluster join skipped due to feature flag."

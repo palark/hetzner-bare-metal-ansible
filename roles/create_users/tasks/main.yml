@@ -1,0 +1,27 @@
+- name: "Sudo users: Create"
+  ansible.builtin.user:
+    name: "{{ item }}"
+    groups: "wheel"
+    password: "{{ users_default_password }}"
+    update_password: on_create
+  with_items: "{{ users_list }}"
+  when: (ansible_distribution == 'CentOS')
+  notify: Enforce new user to change password on first login
+
+- name: "Sudo users: Create"
+  ansible.builtin.user:
+    name: "{{ item }}"
+    groups: "sudo"
+    password: "{{ users_default_password }}"
+    update_password: on_create
+  with_items: "{{ users_list }}"
+  when: (ansible_distribution == 'Ubuntu')
+  notify: Enforce new user to change password on first login
+
+- name: "Sudo users: Add authorized keys"
+  ansible.posix.authorized_key:
+    user: "{{ item }}"
+    key: "{{ lookup('file', 'files/' + item + '.pub') }}"
+  with_items: "{{ users_list }}"
+  ignore_errors: true
+  register: user_changed

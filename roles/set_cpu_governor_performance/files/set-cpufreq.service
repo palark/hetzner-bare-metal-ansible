@@ -1,0 +1,11 @@
+[Unit]
+Description=Set CPU governor to performance
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/set-cpufreq.sh
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

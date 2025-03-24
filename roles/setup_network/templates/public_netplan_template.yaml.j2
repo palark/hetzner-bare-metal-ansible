@@ -1,0 +1,28 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+{% for interface, config in interface_config.ethernets.items() %}
+    {{ interface }}:
+      addresses:
+{% for address in config.addresses %}
+        - {{ address }}
+{% endfor %}
+{% if config.routes is defined %}
+      routes:
+{% for route in config.routes %}
+        - to: {{ route.to }}
+          via: {{ route.via }}
+{% if route.on_link is defined %}
+          on-link: {{ route.on_link }}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if config.nameservers is defined %}
+      nameservers:
+        addresses:
+{% for ns in config.nameservers %}
+          - {{ ns }}
+{% endfor %}
+{% endif %}
+{% endfor %}
