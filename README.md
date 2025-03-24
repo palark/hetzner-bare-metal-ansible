@@ -1,5 +1,7 @@
 # Ansible Playground
 
+[![Ansible Lint](https://github.com/palark/hetzner-bare-metal-ansible/actions/workflows/ansible-lint.yml/badge.svg)](https://github.com/palark/hetzner-bare-metal-ansible/actions/workflows/ansible-lint.yml)
+
 To run the Ansible playbook, use the following command:
 
 ```bash
@@ -48,6 +50,12 @@ Running the full playbook or the `install_os : Run installimage` stage will **er
 
 `create_users`: Create additional OS users, add their public keys, and set the default password with the forced policy to change it on the first login. Public keys should be added to the `roles/create_users/files` directory.
 
-## TODO
-The current `install_os` process is designed to create RAID 1 from two disks (`nvme0n1` and `nvme1n1`). Disk names need to be dynamically determined.
-If there are more than two disks connected to the system, adjustments to `roles/install_os/tasks/main.yml` at line 11 are required.
+## Planned Improvements
+
+We have already used this Ansible playbook in our work, and it does its job well. However, there is always room for improvement, and we see at least three important areas that we’d like to enhance.
+1.	**Automation for connecting to the Kubernetes cluster.** <br>
+We work a lot with Kubernetes and see significant value in automating the process of adding new servers to an existing K8s cluster. In our projects, we achieve this through other automation, so it’s not yet implemented in the playbook.
+2.	**Linting errors.** <br>
+The current implementation doesn’t fully align with Ansible best practices. Specifically, we need to stop using shell commands to retrieve network interface names (in favor of Ansible’s built-in modules) and follow the recommendations for using FQCN for modules. These improvements will not only improve the code quality but also ensure flexibility and portability.
+3. **RAID creation.**<br>
+The current `install_os` process is designed to create RAID 1 from two disks (`nvme0n1` and `nvme1n1`). Disk names need to be dynamically determined. At this point, if there are more than two disks connected to the system, manual adjustments to `roles/install_os/tasks/main.yml` at line 11 are required.
