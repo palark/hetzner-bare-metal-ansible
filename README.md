@@ -1,5 +1,7 @@
 # Ansible Playground
 
+[![Ansible Lint](https://github.com/palark/hetzner-bare-metal-ansible/actions/workflows/ansible-lint.yml/badge.svg)](https://github.com/palark/hetzner-bare-metal-ansible/actions/workflows/ansible-lint.yml)
+
 To run the Ansible playbook, use the following command:
 
 ```bash
