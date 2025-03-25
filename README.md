@@ -22,9 +22,9 @@ ansible-playbook playbook.yml -i inventory/hosts.ini --tags "install_packages" -
 Before running the Ansible playbook, you need to add a new host to inventory/hosts.ini. For example:
 ```ini
 [hetzner_init]
-bare-metal-01 hetzner_ip=1.1.1.1 server_id=1234567
+bare-metal-01 hetzner_ip=1.2.3.4 server_id=1234567
 [nodes]
-bare-metal-01 ansible_host=1.1.1.1 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_python_interpreter=/usr/bin/python3
+bare-metal-01 ansible_host=1.2.3.4 ansible_user=root ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_python_interpreter=/usr/bin/python3
 ```
 
 If you decided to configure additional network interfaces, enable `setup_network` feature flag in `group_vars/all.yml`, prepare a template for the Netplan configuration and place it in the `host_vars` directory, naming it `{{ inventory_hostname }}.yml`. For example:
@@ -43,8 +43,6 @@ Running the full playbook or the `install_os : Run installimage` stage will **er
 `setup_network`: Enable the additional network configuration for several network interfaces.
 
 `set_cpu_governor_performance`: By default, the CPU governor is set to "powersave" mode, which can cause unexpected side effects and poor performance. Set this flag to "true" to switch to the "performance" mode.
-
-`join_cluster`: Join the existing K8s cluster. In addition to this flag, you should add and configure your preferred Ansible role.  
 
 `install_packages`: Install additional packages from the given list
 

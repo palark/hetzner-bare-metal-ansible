@@ -2,7 +2,6 @@
 setup_network: false
 # By default, cpu governor is set to "powersave" mode, which can cause unexpected side effects. Set this flag to "true" to switch to the "performance" mode
 set_cpu_governor_performance: true
-join_cluster: false
 
 install_packages: true
 packages_list:
