@@ -46,6 +46,14 @@
         - features
         - install_net
 
+    - name: Install packages
+      ansible.builtin.include_role:
+        name: install_packages
+      when: install_packages | bool
+      tags:
+        - features
+        - install_packages
+
     - name: Create local users with ssh public key
       ansible.builtin.include_role:
         name: create_users
@@ -61,16 +69,3 @@
       tags:
         - features
         - set_cpu_governor_performance
-
-    - name: Install packages
-      ansible.builtin.include_role:
-        name: install_packages
-      when: install_packages | bool
-      tags:
-        - features
-        - install_packages
-
-    # - name: Join Kubernetes cluster
-    #   ansible.builtin.include_role:
-    #     name: join_cluster
-    #   when: join_cluster | bool
