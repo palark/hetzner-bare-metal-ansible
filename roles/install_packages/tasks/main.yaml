@@ -5,5 +5,5 @@
     name: "{{ item }}"
     state: present
     update_cache: true
-  ignore_errors: true
+  failed_when: false
   with_items: "{{ packages_list }}"
