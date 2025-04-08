@@ -4,4 +4,6 @@
   ansible.builtin.package:
     name: "{{ item }}"
     state: present
+    update_cache: true
+  ignore_errors: true
   with_items: "{{ packages_list }}"

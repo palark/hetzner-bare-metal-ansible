@@ -31,10 +31,9 @@
         name: install_os
       tags: install_os
 
-- name: Setup Kubernetes node
+- name: Prepare Kubernetes node
   hosts: nodes
   become: true
-  gather_facts: false
   vars:
     ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
   tasks:
